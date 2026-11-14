@@ -1,0 +1,210 @@
+<?php
+$firma = 'Pracownia Rowerowa Szprycha';
+$rok = date('Y');
+
+$cennik = [
+    ['nazwa' => 'Przegląd roweru', 'cena' => 120],
+    ['nazwa' => 'Regulacja hamulców', 'cena' => 50],
+    ['nazwa' => 'Serwis napędu', 'cena' => 90],
+    ['nazwa' => 'Wymiana dętki', 'cena' => 40],
+    ['nazwa' => 'Centrowanie koła', 'cena' => 70],
+];
+
+// Odrzucamy niepełne wpisy, aby tabela i wykres korzystały z tych samych danych.
+$cennik = array_values(array_filter($cennik, static function ($usluga) {
+    return is_array($usluga)
+        && isset($usluga['nazwa'], $usluga['cena'])
+        && is_string($usluga['nazwa'])
+        && trim($usluga['nazwa']) !== ''
+        && is_numeric($usluga['cena'])
+        && is_finite((float) $usluga['cena'])
+        && $usluga['cena'] >= 0;
+}));
+$maksCena = $cennik ? max(array_column($cennik, 'cena')) : 0;
+
+$imie = $_GET['imie'] ?? 'Gościu';
+if (!is_string($imie) || trim($imie) === '') {
+    $imie = 'Gościu';
+}
+$imie = trim($imie);
+
+function tekst($wartosc): string
+{
+    return htmlspecialchars((string) $wartosc, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+function cenaPLN($cena): string
+{
+    $miejsca = (float) $cena == floor((float) $cena) ? 0 : 2;
+    return number_format((float) $cena, $miejsca, ',', ' ') . ' zł';
+}
+?>
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Szprycha — przykładowa strona serwisu rowerowego. Przeglądy, regulacja hamulców i serwis napędu. Poznaj usługi i cennik.">
+    <title>Szprycha — serwis rowerowy z dobrą energią</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
+</head>
+<body>
+    <a class="skip-link" href="#tresc">Przejdź do treści</a>
+    <header class="site-header container">
+        <a class="brand" href="#tresc" aria-label="Pracownia Rowerowa Szprycha — strona główna">
+            <svg class="brand__bicycle" viewBox="0 0 120 64" role="img" aria-labelledby="logo-title" xmlns="http://www.w3.org/2000/svg">
+                <title id="logo-title">Szprycha — logo rowerowe</title>
+                <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="28" cy="42" r="18"/>
+                    <circle cx="92" cy="42" r="18"/>
+                    <polyline points="28,42 48,14 60,42 28,42"/>
+                    <polyline points="48,14 80,14 60,42"/>
+                    <polyline points="92,42 80,14 77,6 90,6"/>
+                    <polyline points="48,14 45,7 38,7 52,7"/>
+                    <polyline points="60,42 67,49 72,49"/>
+                    <circle cx="60" cy="42" r="4"/>
+                </g>
+            </svg>
+            <span class="brand__text" aria-hidden="true"><span class="brand__descriptor">Pracownia rowerowa</span><span class="logo">szprycha<span>.</span></span></span>
+        </a>
+        <button class="menu-toggle" type="button" aria-controls="menu-glowne" aria-expanded="false">Menu</button>
+        <nav id="menu-glowne" class="menu" aria-label="Nawigacja główna">
+            <a href="#uslugi">Usługi</a>
+            <a href="#cennik">Cennik</a>
+            <a href="#kontakt">Kontakt</a>
+        </nav>
+    </header>
+    <main id="tresc">
+        <p class="greeting container">Cześć, <?= tekst($imie) ?>!</p>
+        <section class="hero container" aria-labelledby="hero-title">
+            <div class="hero__copy">
+                <p class="eyebrow">Serwis rowerowy · Bydgoszcz</p>
+                <h1 id="hero-title">Dobry serwis.<br><span>Lepsza jazda.</span></h1>
+                <p>Od pierwszego obrotu korbą po ostatni kilometr. Zadbamy o Twój rower, żebyś mógł cieszyć się drogą.</p>
+                <a class="button" href="#uslugi">Poznaj nasze usługi <span aria-hidden="true">↗</span></a>
+                <p class="hero__footnote">Dwa koła. Dużo możliwości.</p>
+            </div>
+            <!-- Decorative inline artwork works offline and needs no image requests. -->
+            <div class="hero__art" aria-hidden="true">
+                <span class="art-label">Z pasji do dwóch kół</span>
+                <svg class="bicycle" viewBox="0 0 520 390" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="269" cy="181" r="143" fill="#e6eddf"/>
+                    <path d="M0 326C100 299 167 339 267 322S438 299 520 320M0 348C100 321 167 361 267 344S438 321 520 342" stroke="#c7d5bc" stroke-width="1.5"/>
+                    <!-- Wheels and spokes. -->
+                    <g stroke="#8c9e87" stroke-width="1.2">
+                        <path d="M133 179V343M51 261H215M75 203L191 319M75 319L191 203M92 190L174 332M62 220L204 302M62 302L204 220M92 332L174 190"/>
+                        <path d="M395 179V343M313 261H477M337 203L453 319M337 319L453 203M354 190L436 332M324 220L466 302M324 302L466 220M354 332L436 190"/>
+                    </g>
+                    <g stroke="#20382e" stroke-width="10">
+                        <circle cx="133" cy="261" r="82"/>
+                        <circle cx="395" cy="261" r="82"/>
+                    </g>
+                    <g stroke="#f7f8f2" stroke-width="2">
+                        <circle cx="133" cy="261" r="75"/>
+                        <circle cx="395" cy="261" r="75"/>
+                    </g>
+                    <!-- Frame, fork and drivetrain. -->
+                    <g stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M133 261L205 148L242 260L133 261M205 148L330 135L242 260M330 135L395 261" stroke="#276347" stroke-width="10"/>
+                        <path d="M205 148L194 119M344 162L324 109L355 102" stroke="#20382e" stroke-width="7"/>
+                        <path d="M174 116H213M350 102H369C391 102 391 128 371 129" stroke="#20382e" stroke-width="9"/>
+                        <path d="M133 253L242 241C267 241 269 279 242 279L133 269Z" stroke="#65745c" stroke-width="2"/>
+                        <circle cx="242" cy="260" r="19" fill="#20382e" stroke="#a9b98f" stroke-width="3"/>
+                        <path d="M242 260L264 280M255 282H276" stroke="#20382e" stroke-width="5"/>
+                        <path d="M327 122C350 125 366 161 360 190" stroke="#65745c" stroke-width="1.5"/>
+                    </g>
+                    <g fill="#20382e"><circle cx="133" cy="261" r="6"/><circle cx="395" cy="261" r="6"/></g>
+                    <path d="M445 64V88M433 76H457" stroke="#276347" stroke-width="2"/>
+                    <circle cx="74" cy="146" r="5" stroke="#8c9e87" stroke-width="2"/>
+                </svg>
+                <div class="art-caption"><span class="status-dot"></span> Gotowy na kolejne kilometry <span>↗</span></div>
+            </div>
+        </section>
+        <section id="uslugi" class="services section container" aria-labelledby="services-title">
+            <p class="eyebrow">01 / Usługi</p>
+            <h2 id="services-title">Twój rower w dobrych rękach.</h2>
+            <p class="section-intro">Mała regulacja czy porządny przegląd? Zaczynamy od tego, czego potrzebuje Twój rower.</p>
+            <div class="cards">
+                <article class="card card--highlight">
+                    <div class="card__top"><span class="card__number" aria-hidden="true">01</span><span class="badge">Najczęściej wybierane</span></div>
+                    <h3>Przegląd roweru</h3>
+                    <p>Kontrola hamulców, przerzutek i podstawowych podzespołów.</p>
+                    <p class="card__price">od <strong>120</strong> zł</p>
+                    <a class="card__link" href="#kontakt">Zapytaj o przegląd <span aria-hidden="true">↗</span></a>
+                </article>
+                <article class="card">
+                    <div class="card__top"><span class="card__number" aria-hidden="true">02</span></div>
+                    <h3>Regulacja hamulców</h3>
+                    <p>Kontrola i regulacja układu hamulcowego.</p>
+                    <p class="card__price">od <strong>50</strong> zł</p>
+                    <a class="card__link" href="#kontakt">Zapytaj o hamulce <span aria-hidden="true">↗</span></a>
+                </article>
+                <article class="card">
+                    <div class="card__top"><span class="card__number" aria-hidden="true">03</span></div>
+                    <h3>Serwis napędu</h3>
+                    <p>Czyszczenie i regulacja przerzutek oraz napędu.</p>
+                    <p class="card__price">od <strong>90</strong> zł</p>
+                    <a class="card__link" href="#kontakt">Zapytaj o napęd <span aria-hidden="true">↗</span></a>
+                </article>
+            </div>
+        </section>
+        <section id="cennik" class="pricing section container" aria-labelledby="pricing-title">
+            <div class="pricing__intro">
+                <p class="eyebrow">02 / Cennik</p>
+                <h2 id="pricing-title">Jasne zasady.<br>Uczciwe ceny.</h2>
+                <p>Najpierw sprawdzamy rower i uzgadniamy zakres prac. Ty decydujesz, my zabieramy się do pracy.</p>
+                <a class="text-link" href="#kontakt">Ustalmy, czego potrzebujesz <span aria-hidden="true">↗</span></a>
+            </div>
+            <div class="pricing__details">
+                <table class="price-table">
+                    <caption>Podstawowe usługi serwisowe</caption>
+                    <thead><tr><th scope="col">Usługa</th><th scope="col" class="num">Cena</th></tr></thead>
+                    <tbody>
+                        <?php foreach ($cennik as $usluga): ?>
+                        <tr><th scope="row"><?= tekst($usluga['nazwa']) ?></th><td class="num">od <?= tekst(cenaPLN($usluga['cena'])) ?></td></tr>
+                        <?php endforeach; ?>
+                        <?php if (!$cennik): ?>
+                        <tr><td colspan="2">Cennik jest aktualizowany. Zapytaj nas o wycenę.</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+                <p class="pricing__note">Podane kwoty dotyczą robocizny. Części rozliczamy osobno, a końcową cenę potwierdzamy przed naprawą.</p>
+                <aside class="price-chart" aria-labelledby="chart-title">
+                    <h3 id="chart-title">Porównanie cen wyjściowych</h3>
+                    <?php foreach ($cennik as $numer => $usluga): ?>
+                    <?php $szerokosc = $maksCena > 0 ? (float) $usluga['cena'] / (float) $maksCena * 100 : 0; ?>
+                    <div class="price-chart__row">
+                        <p class="price-chart__label"><span><?= tekst($usluga['nazwa']) ?></span><span class="price-chart__value">od <?= tekst(cenaPLN($usluga['cena'])) ?></span></p>
+                        <svg viewBox="0 0 100 12" preserveAspectRatio="none" role="img" aria-labelledby="bar-<?= $numer ?>" xmlns="http://www.w3.org/2000/svg">
+                            <title id="bar-<?= $numer ?>"><?= tekst($usluga['nazwa']) ?>: od <?= tekst(cenaPLN($usluga['cena'])) ?></title>
+                            <rect class="price-chart__track" width="100" height="12"/>
+                            <rect class="price-chart__bar" width="<?= number_format($szerokosc, 2, '.', '') ?>" height="12"/>
+                        </svg>
+                    </div>
+                    <?php endforeach; ?>
+                    <?php if ($cennik): ?>
+                    <p class="price-chart__note">Długość paska odpowiada cenie. Pełny pasek oznacza najwyższą kwotę w tabeli. Porównanie dotyczy robocizny.</p>
+                    <?php else: ?>
+                    <p class="price-chart__note">Wykres będzie dostępny po uzupełnieniu cennika.</p>
+                    <?php endif; ?>
+                </aside>
+            </div>
+        </section>
+    </main>
+    <footer id="kontakt" class="contact" aria-labelledby="contact-title">
+        <div class="container section">
+            <p class="eyebrow">03 / Kontakt</p>
+            <h2 id="contact-title">Porozmawiajmy o Twoim rowerze.</h2>
+            <p class="contact__intro">Coś stuka, piszczy albo po prostu czas na przegląd? Odezwij się i ustalmy szczegóły.</p>
+            <address class="contact__details">
+                <div><span class="contact__label">Adres (fikcyjny)</span><p>ul. Rowerowa 12<br>85-001 Bydgoszcz</p></div>
+                <div><span class="contact__label">Telefon</span><a href="tel:+48500100200">500 100 200</a></div>
+                <div><span class="contact__label">E-mail</span><a href="mailto:kontakt@szprycha.pl">kontakt@szprycha.pl</a></div>
+            </address>
+            <div class="contact__bottom"><p>© <?= tekst($rok) ?> <?= tekst($firma) ?></p><p>Projekt edukacyjny · Fikcyjny serwis i dane kontaktowe.</p><a href="#tresc">Do góry <span aria-hidden="true">↑</span></a></div>
+        </div>
+    </footer>
+</body>
+</html>
